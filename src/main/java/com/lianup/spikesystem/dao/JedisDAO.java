@@ -40,6 +40,15 @@ public class JedisDAO implements InitializingBean {
 
 
 
+    public boolean setLock(String key, String val, int expireTime){
+        Jedis jedis = getConnection();
+        String res = jedis.set(key, val, "NX", "PX", expireTime);
+        if("OK".equals(res)){
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 以前用来做分布式锁的旧方法
      * @param key
@@ -159,6 +168,7 @@ public class JedisDAO implements InitializingBean {
         jedis.close();
         return res;
     }
+
 
 
 

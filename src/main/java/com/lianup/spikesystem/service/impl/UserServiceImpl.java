@@ -19,6 +19,17 @@ public class UserServiceImpl implements UserService {
 
 
     private static final String POST_SET_NAME = "POST:SET";
+
+
+
+    public boolean delPost(int userId){
+        if(userId < 0){
+            return false;
+        }
+        jedisDAO.srem(POST_SET_NAME, Integer.toString(userId));
+        return true;
+    }
+
     /**
      * 如何解决 set 中修改的并发问题:lock
      * @param id
@@ -30,14 +41,11 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         boolean res = true;
-        if(redisService.lock(id, EntityType.USER)){
             long get = jedisDAO.sadd(POST_SET_NAME, Integer.toString(id));
             // 域不存在,设置成功
             if(get == 0){
                 res = false;
             }
+            return res;
         }
-        redisService.unlock(id, EntityType.USER);
-        return res;
     }
-}

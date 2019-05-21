@@ -9,6 +9,14 @@ import org.springframework.stereotype.Service;
 //@Service
 public interface UserService {
 
+
+    /**
+     * 若操作失败而非因为库存不足时,用户可以继续请求
+     * @param userId
+     * @return
+     */
+    boolean delPost(int userId);
+
     /**
      * 验证此账号是否允许发出秒杀请求
      * 若此账号已请求,则不允许,否则可以发出请求

@@ -1,14 +1,9 @@
 package com.lianup.spikesystem.controller;
 
-
-import com.alibaba.fastjson.JSON;
-import com.lianup.spikesystem.common.EntityType;
 import com.lianup.spikesystem.common.ResponseCode;
-import com.lianup.spikesystem.service.GoodsService;
 import com.lianup.spikesystem.service.MsgSendService;
 import com.lianup.spikesystem.service.RedisService;
 import com.lianup.spikesystem.service.UserService;
-import com.lianup.spikesystem.vo.MsgObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,10 +39,13 @@ public class GoodsController {
             boolean res = userService.canPost(userId);
             if(!res){
                 retMap.put("code", ResponseCode.OTHER_ERROR);
+                return retMap;
             }else {
                     // 更新缓存中的库存数量
                     if(!redisService.updateCount(goodsId)){
                         retMap.put("code", ResponseCode.OTHER_ERROR);
+                        userService.delPost(userId);
+                        return retMap;
                     }else {
                         // 更新库存成功,向消息队列中发送消息 (还没有考虑发送失败)
                         Map<String, Object> msg = new HashMap<>(2);

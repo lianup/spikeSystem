@@ -21,18 +21,17 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public boolean updateCount(int goodsId) {
-        if(goodsId < 0){
-            return false;
-        }
-        if(!lock(goodsId, EntityType.GOODS)){
-            return false;
-        }
+//        if(goodsId < 0){
+//            return false;
+//        }
+//        if(!lock(goodsId, EntityType.GOODS)){
+//            return false;
+//        }
         // 若库存大于0,则更新
-        if(jedisDAO.hget(HASH_TABLE_NAME, Integer.toString(goodsId)) > 0){
-            jedisDAO.hincrby(HASH_TABLE_NAME, Integer.toString(goodsId), -1);
+        if(jedisDAO.hincrby(HASH_TABLE_NAME, Integer.toString(goodsId), -1) >= 0){
+            return true;
         }
-        unlock(goodsId, EntityType.GOODS);
-        return true;
+        return false;
     }
 
     @Override
@@ -51,14 +50,11 @@ public class RedisServiceImpl implements RedisService {
         long cur = System.currentTimeMillis();
         // 并发时卡在这个地方了,说明非常不合理
         int count = 10;
-        long res = 0;
-        while(((res = jedisDAO.setnx(lockName)) == 0 ) && count > 0){
+        boolean res;
+        while(!(res = jedisDAO.setLock(lockName, Integer.toString(id), 60)) && count > 0){
             count--;
         }
-        if(res == 0){
-            return false;
-        }
-        return true;
+        return res;
 
     }
 
